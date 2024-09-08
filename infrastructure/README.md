@@ -7,6 +7,12 @@
 ## Deploy new environment
 ```bash
 az login
-az account set --subscription <your-subscription-id>
-az deployment group create --template-file main.bicep
+# you may also change the default subscription: az account set --subscription <your-subscription-id>
+az deployment sub create --location westeurope --template-file main.bicep 
+az deployment sub create --location westeurope --template-file main.bicep --parameter @parameters.local.json
+```
+
+## Purge soft-deleted resources
+```bash
+az keyvault purge --subscription {SUBSCRIPTION ID} --name {VAULT NAME}
 ```

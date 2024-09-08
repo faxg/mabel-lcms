@@ -1,10 +1,9 @@
 param prefix string
-param location string
 
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
-  name: '${prefix}-registry'
-  location: location
+  name: toLower(replace(replace(replace('${prefix}registry', '-', ''), '_', ''), ' ', ''))
+  location: resourceGroup().location
   sku: {
     name: 'Standard'
   }

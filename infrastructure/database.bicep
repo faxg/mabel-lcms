@@ -1,29 +1,39 @@
 param prefix string
-param location string
 
 param administratorLogin string
 @secure()
 param administratorLoginPassword string
 
 // https://learn.microsoft.com/en-us/azure/templates/microsoft.dbforpostgresql/flexibleservers?pivots=deployment-language-bicep
-resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
-  name: '${prefix}-db-server'
-  location: location
-  sku: {
-    name: 'Standard_B2ms'
-    tier: 'GeneralPurpose'
-  }
+// Docs:  https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/quickstart-create-server-bicep?toc=%2Fazure%2Fazure-resource-manager%2Fbicep%2Ftoc.json&tabs=CLI
 
+resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
+  name: '${prefix}-dbserver'
+  location: resourceGroup().location
+
+  // See: https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-compute#compute-tiers-vcores-and-server-types
+  sku: {
+    name: 'Standard_B1ms'
+    tier: 'Burstable'
+  }
+  
   properties: {
+    version: '12'
     administratorLogin: administratorLogin
     administratorLoginPassword: administratorLoginPassword
-    version: '11'
-    createMode: 'Default'
+    storage: {
+      autoGrow:'Enabled' 
+      storageSizeGB: 64
+    }
+  }
+
+  identity: {
+    type: 'SystemAssigned'
   }
 }
 
 resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-12-01-preview' = {
-  name: '${prefix}-database'
+  name: 'payloadcms'
   parent: postgresServer
 
   properties: {
@@ -32,10 +42,9 @@ resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-12-0
   }
 }
 
-
 output postgresServerName string = postgresServer.name
 output postgresServerFqdn string = postgresServer.properties.fullyQualifiedDomainName
-output postgresServerTenantId string = postgresServer.properties.authConfig.tenantId
+output postgresServerIdentity object = postgresServer.identity
 
 output postgresDatabaseName string = database.name
 output postgresDatabaseId string = database.id
