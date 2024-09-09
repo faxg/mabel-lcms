@@ -3,14 +3,14 @@ concurrency: mabel
 
 
 on:
-  [workflow_dispatch]
-
   push:
     branches:
       - main
       - '/release/**'
     branches-ignore:
       - 'feature/**'
+
+  workflow_dispatch:
 
 permissions:
   contents: read

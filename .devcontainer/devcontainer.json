@@ -10,7 +10,12 @@
   },
   "customizations": {
     "vscode": {
-      "extensions": ["ms-azuretools.vscode-bicep", "GitHub.copilot", "ms-azuretools.vscode-docker"]
+      "extensions": [
+        "ms-azuretools.vscode-bicep",
+        "GitHub.copilot",
+        "ms-azuretools.vscode-docker",
+        "github.vscode-github-actions"
+      ]
     }
   }
 
