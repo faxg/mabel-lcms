@@ -12,8 +12,8 @@ Azure build in roles: https://learn.microsoft.com/en-us/azure/role-based-access-
 
 ```bash
 export githubOrganizationName='faxg'
-export githubRepositoryName='mable-lcms'
-export applicationRegistrationDisplayName=mable-lcms-github-workflow
+export githubRepositoryName='mabel-lcms'
+export applicationRegistrationDisplayName=mabel-lcms-github-workflow
 export resourceGroupName='mabel-lcms-rg'
 
 export applicationRegistrationDetails=$(az ad app create --display-name $applicationRegistrationDisplayName)
