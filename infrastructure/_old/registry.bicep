@@ -7,7 +7,11 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-pr
   sku: {
     name: 'Standard'
   }
+  identity: {
+    type: 'SystemAssigned'
+  }
 }
 
 output containerRegistryName string = containerRegistry.name
 output containerRegistryLoginServer string = containerRegistry.properties.loginServer
+output containerRegistryIdentity object = containerRegistry.identity

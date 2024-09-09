@@ -1,66 +1,79 @@
-targetScope = 'subscription'
+@description('The Azure region into which the resources should be deployed.')
+param location string = resourceGroup().location
 
-@description('Prefix for all resources, may get sanitized if neded (SA names...). Default "mabel-lcms". ')
-@minLength(4)
-@maxLength(14)
-param prefix string = 'mabel-lcms'
+@description('The type of environment. This must be dev or prod.')
+@allowed([
+  'dev'
+  'prod'
+])
+param environmentType string
 
-@description('Location for all resources. Default "westeurope"')
-param location string = 'westeurope'
+@description('A unique suffix to add to resource names that need to be globally unique.')
+@maxLength(17)
+param resourceNameSuffix string = '${uniqueString(resourceGroup().id)}${environmentType}'
 
-@description('The administrator login for the PostgreSQL server. Default "admin"')
-@minLength(3)
-param administratorLogin string = 'mabeladmin'
+var appServiceAppName = 'mabel-app-${resourceNameSuffix}'
+var appServicePlanName = 'mabel-app-plan'
+var storageAccountName = 'mabel${resourceNameSuffix}'
 
-@description('The password for the PostgreSQL server.')
-@secure()
-param administratorLoginPassword string
+// Define the SKUs for each component based on the environment type.
+var environmentConfigurationMap = {
+  dev: {
+    appServicePlan: {
+      sku: {
+        name: 'F1'
+        capacity: 1
+      }
+    }
+    storageAccount: {
+      sku: {
+        name: 'Standard_LRS'
+      }
+    }
+  }
+  prod: {
+    appServicePlan: {
+      sku: {
+        name: 'S1'
+        capacity: 2
+      }
+    }
+    storageAccount: {
+      sku: {
+        name: 'Standard_ZRS'
+      }
+    }
+  }
+}
 
-/**
-* The resource group. Every Mabel service instance resides fully under one resource group."
-*/
-resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
-  name: '${prefix}-rg'
+var MabelStorageAccountConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+  name: appServicePlanName
   location: location
+  sku: environmentConfigurationMap[environmentType].appServicePlan.sku
 }
 
-/**
-* The storage account for the Mabel instance.
-*/
-module storageAccountModule './storage.bicep' = {
-  name: 'storageAccountDeployment'
-  scope: resourceGroup(rg.name)
-
-  params: {
-    prefix: prefix
+resource appServiceApp 'Microsoft.Web/sites@2022-03-01' = {
+  name: appServiceAppName
+  location: location
+  properties: {
+    serverFarmId: appServicePlan.id
+    httpsOnly: true
+    siteConfig: {
+      appSettings: [
+        {
+          name: 'MabelStorageAccountConnectionString'
+          value: MabelStorageAccountConnectionString
+        }
+      ]
+    }
   }
 }
 
-module postgresServerModule './database.bicep' = {
-  name: 'postgresServerDeployment'
-  scope: resourceGroup(rg.name)
-  params: {
-    prefix: prefix
-    administratorLogin: administratorLogin
-    administratorLoginPassword: administratorLoginPassword
-  }
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: storageAccountName
+  location: location
+  kind: 'StorageV2'
+  sku: environmentConfigurationMap[environmentType].storageAccount.sku
 }
-
-module containerRegistryModule './registry.bicep' = {
-  name: 'containerRegistryDeployment'
-  scope: resourceGroup(rg.name)
-  params: {
-    prefix: prefix
-  }
-}
-
-
-module keyVaultModule './keyvault.bicep' = {
-  name: 'keyVaultDeployment'
-  scope: resourceGroup(rg.name)
-  params: {
-    prefix: prefix
-    location: location
-  }
-}
-

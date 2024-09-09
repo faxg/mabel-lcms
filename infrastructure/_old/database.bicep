@@ -1,8 +1,10 @@
 param prefix string
+//param keyVaultName string
 
 param administratorLogin string
 @secure()
 param administratorLoginPassword string
+
 
 // https://learn.microsoft.com/en-us/azure/templates/microsoft.dbforpostgresql/flexibleservers?pivots=deployment-language-bicep
 // Docs:  https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/quickstart-create-server-bicep?toc=%2Fazure%2Fazure-resource-manager%2Fbicep%2Ftoc.json&tabs=CLI

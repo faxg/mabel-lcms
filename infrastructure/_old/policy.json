@@ -1,0 +1,6 @@
+{
+  "name": "MabelGHActionsWorkflowFederatedCredential",
+  "issuer": "https://token.actions.githubusercontent.com",
+  "subject": "repo:faxg/mabel-lcms:ref:refs/heads/main",
+  "audiences": ["api://AzureADTokenExchange"]
+}
