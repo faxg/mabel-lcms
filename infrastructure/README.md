@@ -29,7 +29,7 @@ az ad app federated-credential create \
 export resourceGroupResourceId=$(az group create --name $resourceGroupName --location westeurope --query id --output tsv)
 
 
-az ad sp create --id $applicationRegistrationObjectId
+az ad sp create --id $applicationRegistrationAppId
 az role assignment create \
    --assignee $applicationRegistrationAppId \
    --role Contributor \
