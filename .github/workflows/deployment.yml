@@ -71,7 +71,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    #environment: MyAzureEnvironment
+    environment: MabelApp
     needs: preview
     steps:
     - uses: actions/checkout@v3
