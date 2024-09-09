@@ -7,8 +7,8 @@ on:
     branches:
       - main
       - '/release/**'
-    branches-ignore:
-      - 'feature/**'
+    # branches-ignore:
+    #   - 'feature/**'
 
   workflow_dispatch:
 
