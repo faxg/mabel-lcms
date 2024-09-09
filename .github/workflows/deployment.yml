@@ -1,6 +1,16 @@
-name: Mabel LCMS on Azure - Deployment
+name: deploy-mabel-lcms
+concurrency: mabel
 
-on: [workflow_dispatch]
+
+on:
+  [workflow_dispatch]
+
+  push:
+    branches:
+      - main
+      - '/release/**'
+    branches-ignore:
+      - 'feature/**'
 
 permissions:
   contents: read
