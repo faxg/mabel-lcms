@@ -1,19 +1,24 @@
 # How to deploy
 
 ## Prerequisites
-- az tool installed
-- Azure subscription ID with admin permissions
-
+- az tool installed, logged via az login
+- Azure tenant and subscription 
+- An (empty) Azure ResourceGroup, with admin permissions
 
 
 ## Create Workload Identity for GitHub Action Workflows
 
-Azure build in roles: https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
+Here's the script to create 
+- create Application and Application Registration with federated credentials
+- create a role assignment to the Resource Groupe (scope)
+
+Azure build in roles:
+https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
 
 ```bash
 export githubOrganizationName='faxg'
 export githubRepositoryName='mabel-lcms'
-export applicationRegistrationDisplayName=mabel-lcms-github-workflow
+export applicationRegistrationDisplayName='mabel-lcms-github-workflow'
 export resourceGroupName='mabel-lcms-rg'
 
 export applicationRegistrationDetails=$(az ad app create --display-name $applicationRegistrationDisplayName)
@@ -35,6 +40,7 @@ az role assignment create \
    --role Contributor \
    --scope $resourceGroupResourceId
 
+echo "Add to the GitHub > repository > settings > Secrets and variables > Actions
 echo "AZURE_CLIENT_ID: $applicationRegistrationAppId"
 echo "AZURE_TENANT_ID: $(az account show --query tenantId --output tsv)"
 echo "AZURE_SUBSCRIPTION_ID: $(az account show --query id --output tsv)"
@@ -48,14 +54,23 @@ echo "AZURE_SUBSCRIPTION_ID: $(az account show --query id --output tsv)"
 
 
 ## Deploy new environment
-```bash
-az login
-# you may also change the default subscription: az account set --subscription <your-subscription-id>
-az deployment sub create --location westeurope --template-file main.bicep 
-az deployment sub create --location westeurope --template-file main.bicep --parameter @parameters.local.json
-```
 
 ## Purge soft-deleted resources
 ```bash
 az keyvault purge --subscription {SUBSCRIPTION ID} --name {VAULT NAME}
+```
+
+
+## Delete resource group
+```bash
+az group delete --resource-group ToyWebsite --yes --no-wait
+```
+
+IMPORANT: you need to re-create the role assignment afterwards, or GH Actions will fail:
+```bash
+export resourceGroupResourceId=$(az group create --name $resourceGroupName --location westeurope --query id --output tsv)
+az role assignment create \
+   --assignee $applicationRegistrationAppId \
+   --role Contributor \
+   --scope $resourceGroupResourceId
 ```
