@@ -19,6 +19,9 @@ var storageAccountName = 'mabel${resourceNameSuffix}'
 // Define the SKUs for each component based on the environment type.
 var environmentConfigurationMap = {
   dev: {
+    appServiceApp: {
+      alwaysOn: false
+    }
     appServicePlan: {
       sku: {
         name: 'F1'
@@ -32,10 +35,14 @@ var environmentConfigurationMap = {
     }
   }
   prod: {
+    appServiceApp: {
+      alwaysOn: true
+    }
+
     appServicePlan: {
       sku: {
         name: 'S1'
-        capacity: 2
+        capacity: 1
       }
     }
     storageAccount: {
@@ -61,7 +68,7 @@ resource appServiceApp 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: appServicePlan.id
     httpsOnly: true
     siteConfig: {
-      alwaysOn: true
+      alwaysOn: environmentConfigurationMap[environmentType].appServiceApp.alwaysOn
       appSettings: [
         {
           name: 'MabelStorageAccountConnectionString'
