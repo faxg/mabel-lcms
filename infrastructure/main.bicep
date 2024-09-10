@@ -18,7 +18,10 @@ var storageAccountName = 'mabel${resourceNameSuffix}'
 
 // Define the SKUs for each component based on the environment type.
 var environmentConfigurationMap = {
-  dev: {
+ /**
+  * config map for "Devlopment" environment.
+  */
+  Development: {
     appServiceApp: {
       alwaysOn: false
     }
@@ -34,7 +37,10 @@ var environmentConfigurationMap = {
       }
     }
   }
-  prod: {
+ /**
+  * config map for "Production" environment.
+  */
+  Production: {
     appServiceApp: {
       alwaysOn: true
     }
