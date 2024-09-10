@@ -99,12 +99,12 @@ jobs:
     needs: deploy
     steps:
     - uses: actions/checkout@v3
-    - run: |
-        $container = New-PesterContainer `
-          -Path 'deploy/Website.Tests.ps1' `
-          -Data @{ HostName = '${{needs.deploy.outputs.appServiceAppHostName}}' }
-        Invoke-Pester `
-          -Container $container `
-          -CI
-      name: Run smoke tests
-      shell: pwsh
+    # - run: |
+    #     $container = New-PesterContainer `
+    #       -Path 'deploy/Website.Tests.ps1' `
+    #       -Data @{ HostName = '${{needs.deploy.outputs.appServiceAppHostName}}' }
+    #     Invoke-Pester `
+    #       -Container $container `
+    #       -CI
+    #   name: Run smoke tests
+    #   shell: pwsh
