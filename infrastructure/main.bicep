@@ -164,7 +164,7 @@ var environmentConfigurationMap = {
 //   }
 // }
 
-module keyvault './keyvault.bicep' = {
+module keyVault './keyvault.bicep' = {
   name: 'deploy-keyvault'
   params: {
     location: location
@@ -175,11 +175,15 @@ module keyvault './keyvault.bicep' = {
     }
   }
 }
+resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
+  name: keyVaultName
+  scope: resourceGroup(subscription().subscriptionId, resourceGroup().name)
+}
 
 module storage './storage.bicep' = {
   name: 'deploy-storage'
   dependsOn: [
-    keyvault
+    kv
   ]
   params: {
     location: location
@@ -192,7 +196,7 @@ module storage './storage.bicep' = {
 module database './database.bicep' = {
   name: 'deploy-database'
   dependsOn: [
-    keyvault
+    kv
   ]
 
   params: {
