@@ -15,11 +15,24 @@ param resourceNameSuffix string = '${take(toLower(uniqueString(resourceGroup().i
 @description('An external API endpoint, potentially different per environment')
 param externalApiUrl string
 
-var appServiceAppName = 'mabel-app-${resourceNameSuffix}'
-var appServicePlanName = 'mabel-app-plan-${resourceNameSuffix}'
-var storageAccountName = toLower('mabel${resourceNameSuffix}')
+@description('Postgres admin user')
+param databaseAdminLogin string = 'mabeladmin'
+@description('Postgres admin password')
+@secure()
+param databaseAdminPassword string
 
-// Define the SKUs for each component based on the environment type.
+// var appServiceAppName = 'mabel-app-${resourceNameSuffix}'
+// var appServicePlanName = 'mabel-app-plan-${resourceNameSuffix}'
+
+var storageAccountName = toLower('mabel${resourceNameSuffix}')
+var databaseName = 'mabel-db-${resourceNameSuffix}'
+
+/*****
+*** Define the SKUs for each component based on the environment type.
+*** 
+***
+***
+******/
 var environmentConfigurationMap = {
   /**
   * config map for a "devlopment" environment.
@@ -41,7 +54,15 @@ var environmentConfigurationMap = {
         name: 'Standard_LRS'
       }
     }
+
+    database: {
+      sku: {
+        name: 'Standard_B1ms'
+        tier: 'Burstable'
+      }
+    }
   }
+
   /**
   * config map for a "production" environment.
   */
@@ -63,42 +84,110 @@ var environmentConfigurationMap = {
         name: 'Standard_ZRS'
       }
     }
-  }
-}
-
-var MabelStorageAccountConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
-
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: appServicePlanName
-  location: location
-  sku: environmentConfigurationMap[environmentType].appServicePlan.sku
-}
-
-resource appServiceApp 'Microsoft.Web/sites@2022-03-01' = {
-  name: appServiceAppName
-  location: location
-  properties: {
-    serverFarmId: appServicePlan.id
-    httpsOnly: true
-    siteConfig: {
-      alwaysOn: environmentConfigurationMap[environmentType].appServiceApp.alwaysOn
-      appSettings: [
-        {
-          name: 'MabelStorageAccountConnectionString'
-          value: MabelStorageAccountConnectionString
-        }
-        {
-          name: 'externalApiUrl'
-          value: environmentConfigurationMap[environmentType].externalApiUrl
-        }
-      ]
+    database: {
+      sku: {
+        name: 'Standard_B1ms'
+        tier: 'Burstable'
+      }
     }
   }
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: storageAccountName
-  location: location
-  kind: 'StorageV2'
-  sku: environmentConfigurationMap[environmentType].storageAccount.sku
+// Connection string for the Storage account
+
+// output appServiceAppName string = appServiceAppName
+// output appServicePlanName string = appServicePlanName
+
+// resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+//   name: appServicePlanName
+//   location: location
+//   sku: environmentConfigurationMap[environmentType].appServicePlan.sku
+// }
+
+// resource appServiceApp 'Microsoft.Web/sites@2022-03-01' = {
+//   name: appServiceAppName
+//   location: location
+//   properties: {
+//     serverFarmId: appServicePlan.id
+//     httpsOnly: true
+//     siteConfig: {
+//       alwaysOn: environmentConfigurationMap[environmentType].appServiceApp.alwaysOn
+//       appSettings: [
+//         {
+//           name: 'MabelStorageAccountConnectionString'
+//           value: MabelStorageAccountConnectionString
+//         }
+//         {
+//           name: 'externalApiUrl'
+//           value: environmentConfigurationMap[environmentType].externalApiUrl
+//         }
+//       ]
+//     }
+//   }
+// }
+
+// resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
+//   name: 'mabel-postgres-${resourceNameSuffix}'
+//   location: location
+
+//   sku: {
+//     name: 'Standard_B1ms'
+//     tier: 'Burstable'
+//   }
+//   properties: {
+//     version: '15'
+//     administratorLogin: 'mabeladmin'
+//     administratorLoginPassword: 'Password1234!'
+//     network: {
+//       publicNetworkAccess: 'Enabled'
+//     }
+//     //availabilityZone: '1'
+//     backup: {
+//       backupRetentionDays: 7
+//       geoRedundantBackup: 'Disabled'
+//     }
+//     highAvailability: {
+//       mode: 'Disabled'
+//     }
+//   }
+// }
+
+// resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-12-01-preview' = {
+//   name: 'payloadcms'
+//   parent: postgresServer
+
+//   properties: {
+//     charset: 'UTF8'
+//     collation: 'en_US.utf8'
+//   }
+// }
+
+module storage './storage.bicep' = {
+  name: 'deploy-storage'
+  params: {
+    location: location
+    environmentType: environmentType
+    storageAccountName: storageAccountName
+    environmentConfigurationMap: environmentConfigurationMap
+  }
 }
+
+module database './database.bicep' = {
+  name: 'deploy-database'
+  params: {
+    location: location
+    environmentType: environmentType
+    databaseName: databaseName
+    databaseAdminLogin: databaseAdminLogin
+    databaseAdminPassword: databaseAdminPassword
+    environmentConfigurationMap: environmentConfigurationMap
+  }
+}
+
+// module kv './keyvault.bicep' = {
+
+// } 
+
+// module app './app.bicep' = {
+
+// } 
