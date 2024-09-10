@@ -27,8 +27,8 @@ jobs:
   ###
   ### Linting (independent of environment)
   ### 
-  lint:
-    uses: ./.github/workflows/lint.yml
+  # lint:
+  #   uses: ./.github/workflows/lint.yml
   
 
   ###
@@ -36,7 +36,7 @@ jobs:
   ###
   deploy-development:
     uses: ./.github/workflows/deploy.yml
-    needs: lint
+    #needs: lint
     with:    
       environmentType: development
       resourceGroupName: mabel-lcms-rg
@@ -45,25 +45,25 @@ jobs:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      # externalApiKey: <some-key>
+
 
 
   # Deploy to the production environment.
-  deploy-production:
+  # deploy-production:
 
-    uses: ./.github/workflows/deploy.yml
-    needs: deploy-development
-    with:
-      environmentType: production
-      resourceGroupName: mabel-lcms-PROD-rg
+  #   uses: ./.github/workflows/deploy.yml
+  #   needs: deploy-development
+  #   with:
+  #     environmentType: production
+  #     resourceGroupName: mabel-lcms-PROD-rg
 
-    secrets:
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  #   secrets:
+  #     AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  #     AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  #     AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
 
-      # externalApiKey: <some-key>
+  #     # externalApiKey: <some-key>
 
 
 

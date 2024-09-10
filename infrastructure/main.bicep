@@ -174,6 +174,7 @@ module storage './storage.bicep' = {
 
 module database './database.bicep' = {
   name: 'deploy-database'
+  
   params: {
     location: location
     environmentType: environmentType
@@ -182,6 +183,7 @@ module database './database.bicep' = {
     databaseAdminPassword: databaseAdminPassword
     environmentConfigurationMap: environmentConfigurationMap
   }
+  
 }
 
 // module kv './keyvault.bicep' = {
