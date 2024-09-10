@@ -18,8 +18,8 @@ on:
             required: true
         AZURE_SUBSCRIPTION_ID:
             required: true
-        # POSTGRES_ADMIN_PASSWORD:
-        #     required: true
+        POSTGRES_ADMIN_PASSWORD:
+            required: true
 
 
         # externalApiKey:
@@ -101,7 +101,7 @@ jobs:
         template: ./infrastructure/main.bicep
         parameters: >
           @./infrastructure/parameters.${{ inputs.environmentType }}.json
-          databaseAdminPassword=234${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+          databaseAdminPassword=${{ secrets.POSTGRES_ADMIN_PASSWORD }}
 
 
 
