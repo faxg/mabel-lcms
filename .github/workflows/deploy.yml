@@ -89,30 +89,30 @@ jobs:
             environmentType=${{ inputs.environmentType }}
 
 
-    ##
-    ## Run basic smoke tests on fresh deployments
-    ##
+  #   #
+  #   # Run basic smoke tests on fresh deployments
+  #   #
   # smoketest:
-    runs-on: ubuntu-latest
-    needs: deploy
-    environment: Development  #TODO FIXME Federated Credential for environments instead of branch?
-    steps:
-    - uses: actions/checkout@v3
-        # name: Run smoke tests
-        # TODO: Add Playwright UI Smoke tests
-        # - run: |
-        #     $container = New-PesterContainer `
-        #       -Path 'infrastructure/Mabel.Tests.ps1' `
-        #       -Data @{ HostName = '${{needs.deploy.outputs.appServiceAppHostName}}' }
-        #     Invoke-Pester `
-        #       -Container $container `
-        #       -CI
-        #   shell: pwsh
+  #   runs-on: ubuntu-latest
+  #   needs: deploy
+  #   environment: Development  #TODO FIXME Federated Credential for environments instead of branch?
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #       name: Run smoke tests
+  #       TODO: Add Playwright UI Smoke tests
+  #       - run: |
+  #           $container = New-PesterContainer `
+  #             -Path 'infrastructure/Mabel.Tests.ps1' `
+  #             -Data @{ HostName = '${{needs.deploy.outputs.appServiceAppHostName}}' }
+  #           Invoke-Pester `
+  #             -Container $container `
+  #             -CI
+  #         shell: pwsh
         
-    # rollback: 
-    #   runs-on: ubuntu-latest
-    #   needs: smoke-test
-    #   if: ${{ always() && needs.smoke-test.result == 'failure' }}
-    #   steps:
-    #   - run: |
-    #       echo "Performing rollback steps..."
+  #   rollback: 
+  #     runs-on: ubuntu-latest
+  #     needs: smoke-test
+  #     if: ${{ always() && needs.smoke-test.result == 'failure' }}
+  #     steps:
+  #     - run: |
+  #         echo "Performing rollback steps..."
