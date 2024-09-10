@@ -168,9 +168,11 @@ module keyvault './keyvault.bicep' = {
   name: 'deploy-keyvault'
   params: {
     location: location
-    environmentType: environmentType
     keyVaultName: keyVaultName
-    environmentConfigurationMap: environmentConfigurationMap
+    secrets: {
+      databaseAdminLogin: databaseAdminLogin
+      databaseAdminPassword: databaseAdminPassword
+    }
   }
 }
 
@@ -181,8 +183,8 @@ module storage './storage.bicep' = {
   ]
   params: {
     location: location
-    environmentType: environmentType
     storageAccountName: storageAccountName
+    environmentType: environmentType
     environmentConfigurationMap: environmentConfigurationMap
   }
 }

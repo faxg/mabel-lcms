@@ -1,18 +1,23 @@
 param location string
 param keyVaultName string
 
-param environmentType string
-param environmentConfigurationMap object
+@secure()
+param secrets object
 
 // see: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/scenarios-secrets
 
-// crate a service principal
-// resource sp 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
-//   location: location
-//   name: 'sp-${keyVaultName}'
-// }
+var objectIds = [
+  {
+    id: 'e5ba7730-e35c-4d20-85f0-5e1fd274fabd' // My User Object ID (MicrosoftAccount)
+    description: 'My User Object ID (MicrosoftAccount)'
+  }
+  {
+    id: 'b74e3b92-6566-4336-a131-aeffef931168' // Workflow runner GitHub Actions 'mabel-lcms-github-workflow'
+    description: 'Workflow runner GitHub Actions "mabel-lcms-github-workflow"'
+  }
+]
 
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
+resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
   location: location
   properties: {
@@ -20,22 +25,14 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enableRbacAuthorization: false
     tenantId: tenant().tenantId
     accessPolicies: [
-      {
-        objectId: 'e5ba7730-e35c-4d20-85f0-5e1fd274fabd' // My User Object ID (MicrosoftAccount)
+      for objectId in objectIds: {
+        objectId: objectId.id
         tenantId: tenant().tenantId
         permissions: {
           keys: ['all']
           secrets: ['all']
         }
       }
-      // {
-      //   objectId: 'b74e3b92-6566-4336-a131-aeffef931168' // Workflow runner GitHub Actions 'mabel-lcms-github-workflow'
-      //   tenantId: tenant().tenantId
-      //   permissions: {
-      //     keys: ['all']
-      //     secrets: ['all']
-      //   }
-      // }
     ]
     sku: {
       name: 'standard'
@@ -44,13 +41,23 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
-resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: keyVault
-  name: 'MySecretName'
-  properties: {
-    value: 'MyVerySecretValue'
+resource secretsResource 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = [
+  for secretName in objectKeys(secrets): {
+    parent: kv
+    name: secretName
+    properties: {
+      value: secrets[secretName]
+    }
   }
-}
+]
+
+// resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+//   parent: kv
+//   name: 'databaseAdminLogin'
+//   properties: {
+//     value: 'mabelAdmin'
+//   }
+// }
 
 // @description('Specifies all secrets {"secretName":"","secretValue":""} wrapped in a secure object.')
 // @secure()
@@ -64,5 +71,4 @@ resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
 //   }
 // }]
 
-
-output keyVaultUri string = keyVault.properties.vaultUri
+output keyVaultUri string = kv.properties.vaultUri
