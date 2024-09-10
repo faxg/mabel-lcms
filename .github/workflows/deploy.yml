@@ -30,8 +30,8 @@ jobs:
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}    
+
     - if: inputs.environmentType != 'Production'
       uses: azure/arm-deploy@v1
       name: Run preflight validation
@@ -57,14 +57,14 @@ jobs:
         additionalArguments: --what-if
 
 
-    ##
-    ## Deployinto rg usign Bicep Templates
-    ##
+  ##
+  ## Deploy into rg usign Bicep Templates
+  ##
   deploy:
     needs: validate
     environment: ${{ inputs.environmentType }}
     runs-on: ubuntu-latest
-    
+
     outputs:
         appServiceAppHostName: ${{ steps.deploy.outputs.appServiceAppHostName }}
 
@@ -76,7 +76,6 @@ jobs:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
     - uses: azure/arm-deploy@v1
       id: deploy
       name: Deploy Bicep file
@@ -93,13 +92,13 @@ jobs:
     ##
     ## Run basic smoke tests on fresh deployments
     ##
-    smoke-test:
-        runs-on: ubuntu-latest
-        needs: deploy
-        environment: Development  #TODO FIXME Federated Credential for environments instead of branch?
-        steps:
-        - uses: actions/checkout@v3
-          name: Run smoke tests
+  # smoketest:
+    runs-on: ubuntu-latest
+    needs: deploy
+    environment: Development  #TODO FIXME Federated Credential for environments instead of branch?
+    steps:
+    - uses: actions/checkout@v3
+        # name: Run smoke tests
         # TODO: Add Playwright UI Smoke tests
         # - run: |
         #     $container = New-PesterContainer `
