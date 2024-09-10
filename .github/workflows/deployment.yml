@@ -74,8 +74,8 @@ jobs:
     environment: Development  #TODO FIXME Federated Credential for environments instead of branch
     needs: preview
     outputs:
-      appServiceAppHostName: ${{ steps.deploy.outputs.appServiceAppHostName }}
-      appServiceAppName: ${{ steps.deploy.outputs.appServiceAppName }}
+      appServiceAppHostName: ${{ steps.deploytemplate.outputs.appServiceAppHostName }}
+      appServiceAppName: ${{ steps.deploytemplate.outputs.appServiceAppName }}
     steps:
     - uses: actions/checkout@v3
     - uses: azure/login@v1
@@ -85,7 +85,7 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - uses: azure/arm-deploy@v1
-      id: deploy
+      id: deploytemplate
       name: Deploy Bicep template
       with:
         scope: resourcegroup
@@ -96,8 +96,8 @@ jobs:
         parameters: environmentType=${{ env.ENVIRONMENT }}
     
     - run: |
-        echo "App Hostname: ${{ steps.deploy.outputs.appServiceAppHostName }}"
-        echo "App Name: ${{ steps.deploy.outputs.appServiceAppName }}"
+        echo "App Hostname: ${{ steps.deploytemplate.outputs.appServiceAppHostName }}"
+        echo "App Name: ${{ steps.deploytemplate.outputs.appServiceAppName }}"
 
   smoke-test:
     runs-on: ubuntu-latest
