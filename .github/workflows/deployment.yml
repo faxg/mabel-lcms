@@ -1,5 +1,5 @@
-name: deploy-dev-on-azure
-concurrency: deploy-dev
+name: deploy-to-azure-environments
+concurrency: deploy-mabel
 
 
 on:
@@ -7,124 +7,123 @@ on:
     branches:
       - main
       - '/release/**'
-    # branches-ignore:
-    #   - 'feature/**'
-
   workflow_dispatch:
 
 permissions:
   contents: read
   id-token: write
 
-env:
-    AZURE_RESOURCEGROUP_NAME: mabel-lcms-rg
-    ENVIRONMENT: dev
+# env:
+#     AZURE_RESOURCEGROUP_NAME: mabel-lcms-rg
+#     ENVIRONMENT: dev
 
 jobs:
+
+  ###
+  ### Linting (independent of environment)
+  ### 
   lint:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: 'Lint Bicep template'
-      run: az bicep build --file ./infrastructure/main.bicep
-
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - uses: azure/arm-deploy@v1
-      name: Run preflight validation
-      with:
-        scope: resourcegroup
-        resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
-        template: ./infrastructure/main.bicep
-        parameters: environmentType=${{ env.ENVIRONMENT }}
-        deploymentMode: Validate
-
-
-  preview:
-    runs-on: ubuntu-latest
-    needs: [lint, validate]
-    environment: Development  
-
-    steps:
-    - uses: actions/checkout@v3
-    - uses: azure/login@v1
-      name: Sign in to Azure
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - uses: azure/arm-deploy@v1
-      name: Run what-if
-      with:
-        scope: resourcegroup
-        failOnStdErr: false
-        resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
-        template: ./infrastructure/main.bicep
-        parameters: >
-          environmentType=${{ env.ENVIRONMENT }}
-        additionalArguments: --what-if
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: preview
-    environment: Development  #TODO FIXME Federated Credential for environments instead of branch?
-    
-    outputs:
-      appServiceAppHostName: ${{ steps.deploytemplate.outputs.appServiceAppHostName }}
-      appServiceAppName: ${{ steps.deploytemplate.outputs.appServiceAppName }}
-    
-    steps:
-    - uses: actions/checkout@v3
-    - uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-    - uses: azure/arm-deploy@v1
-      id: deploytemplate
-      name: Deploy Bicep template
-      with:
-        scope: resourcegroup
-        failOnStdErr: false
-        deploymentName: ${{ github.run_number }}
-        resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
-        template: ./infrastructure/main.bicep
-        parameters: environmentType=${{ env.ENVIRONMENT }}
-    
-    - run: |
-        echo "App Hostname: ${{ steps.deploytemplate.outputs.appServiceAppHostName }}"
-        echo "App Name: ${{ steps.deploytemplate.outputs.appServiceAppName }}"
-
-  smoke-test:
-    runs-on: ubuntu-latest
-    needs: deploy
-    environment: Development  #TODO FIXME Federated Credential for environments instead of branch?
-    steps:
-    - uses: actions/checkout@v3
-      name: Run smoke tests
-    # TODO: Add Playwright UI Smoke tests
-
-    # - run: |
-    #     $container = New-PesterContainer `
-    #       -Path 'infrastructure/Mabel.Tests.ps1' `
-    #       -Data @{ HostName = '${{needs.deploy.outputs.appServiceAppHostName}}' }
-    #     Invoke-Pester `
-    #       -Container $container `
-    #       -CI
-    #   shell: pwsh
+    uses: ./.github/workflows/lint.yml
   
-  # rollback: 
+  ###
+  ### Deploy to the test environment.
+  ###
+  deploy-development:
+    uses: ./.github/workflows/deploy.yml
+    needs: lint
+    with:
+      environmentType: Development
+      resourceGroupName: mabel-lcms-rg
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+  # Deploy to the production environment.
+  deploy-production:
+    uses: ./.github/workflows/deploy.yml
+    needs: deploy-development
+    with:
+      environmentType: Production
+      resourceGroupName: mabel-lcms-PROD-rg
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+  # validate:
   #   runs-on: ubuntu-latest
-  #   needs: smoke-test
-  #   if: ${{ always() && needs.smoke-test.result == 'failure' }}
   #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: azure/login@v1
+  #     with:
+  #       client-id: ${{ secrets.AZURE_CLIENT_ID }}
+  #       tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+  #       subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  #   - uses: azure/arm-deploy@v1
+  #     name: Run preflight validation
+  #     with:
+  #       scope: resourcegroup
+  #       resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
+  #       template: ./infrastructure/main.bicep
+  #       parameters: environmentType=${{ env.ENVIRONMENT }}
+  #       deploymentMode: Validate
+
+
+  # preview:
+  #   runs-on: ubuntu-latest
+  #   needs: [lint, validate]
+  #   environment: Development  
+
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: azure/login@v1
+  #     name: Sign in to Azure
+  #     with:
+  #       client-id: ${{ secrets.AZURE_CLIENT_ID }}
+  #       tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+  #       subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  #   - uses: azure/arm-deploy@v1
+  #     name: Run what-if
+  #     with:
+  #       scope: resourcegroup
+  #       failOnStdErr: false
+  #       resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
+  #       template: ./infrastructure/main.bicep
+  #       parameters: >
+  #         environmentType=${{ env.ENVIRONMENT }}
+  #       additionalArguments: --what-if
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: preview
+  #   environment: Development  #TODO FIXME Federated Credential for environments instead of branch?
+    
+  #   outputs:
+  #     appServiceAppHostName: ${{ steps.deploytemplate.outputs.appServiceAppHostName }}
+  #     appServiceAppName: ${{ steps.deploytemplate.outputs.appServiceAppName }}
+    
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: azure/login@v1
+  #     with:
+  #       client-id: ${{ secrets.AZURE_CLIENT_ID }}
+  #       tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+  #       subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+  #   - uses: azure/arm-deploy@v1
+  #     id: deploytemplate
+  #     name: Deploy Bicep template
+  #     with:
+  #       scope: resourcegroup
+  #       failOnStdErr: false
+  #       deploymentName: ${{ github.run_number }}
+  #       resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
+  #       template: ./infrastructure/main.bicep
+  #       parameters: environmentType=${{ env.ENVIRONMENT }}
+    
   #   - run: |
-  #       echo "Performing rollback steps..."
+  #       echo "App Hostname: ${{ steps.deploytemplate.outputs.appServiceAppHostName }}"
+  #       echo "App Name: ${{ steps.deploytemplate.outputs.appServiceAppName }}"
+
+
