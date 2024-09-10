@@ -17,8 +17,25 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   location: location
   properties: {
     enabledForTemplateDeployment: true
+    enableRbacAuthorization: true
     tenantId: tenant().tenantId
     accessPolicies: [
+      {
+        objectId: 'e5ba7730-e35c-4d20-85f0-5e1fd274fabd' // My User Object ID (MicrosoftAccount)
+        tenantId: tenant().tenantId
+        permissions: {
+          keys: ['all']
+          secrets: ['all']
+        }
+      }
+      {
+        objectId: 'b74e3b92-6566-4336-a131-aeffef931168' // Workflow runner GitHub Actions 'mabel-lcms-github-workflow'
+        tenantId: tenant().tenantId
+        permissions: {
+          keys: ['all']
+          secrets: ['all']
+        }
+      }
     ]
     sku: {
       name: 'standard'
