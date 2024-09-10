@@ -38,7 +38,6 @@ jobs:
     with:
       environmentType: development
       resourceGroupName: mabel-lcms-rg
-      externalApiUrl: https://sandbox.contoso.com/reviews
 
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -55,7 +54,7 @@ jobs:
     with:
       environmentType: production
       resourceGroupName: mabel-lcms-PROD-rg
-      externalApiUrl: https://production.contoso.com/reviews
+
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
