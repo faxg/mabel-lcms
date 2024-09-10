@@ -26,8 +26,8 @@ param databaseAdminPassword string
 // var appServicePlanName = 'mabel-app-plan-${resourceNameSuffix}'
 
 var storageAccountName = toLower('mabel${resourceNameSuffix}')
-var databaseName = 'mabel-db-${resourceNameSuffix}'
-var keyVaultName = 'mabel-kv-${resourceNameSuffix}'
+var databaseName = 'db-${resourceNameSuffix}'
+var keyVaultName = 'kv-${resourceNameSuffix}'
 
 /*****
 *** Define the SKUs for each component based on the environment type.
