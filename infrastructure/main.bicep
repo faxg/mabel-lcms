@@ -1,12 +1,12 @@
 @description('The Azure region into which the resources should be deployed.')
 param location string = resourceGroup().location
 
-@description('The type of environment. This must be "Devlopment" or "Production".')
+@description('The type of environment. This must be "devlopment" or "production".')
 @allowed([
-  'Development'
-  'Production'
+  'development'
+  'production'
 ])
-param environmentType string = 'Development'
+param environmentType string = 'development'
 
 @description('A unique suffix to add to resource names that need to be globally unique.')
 @maxLength(18)
@@ -14,14 +14,14 @@ param resourceNameSuffix string = '${take(toLower(uniqueString(resourceGroup().i
 
 var appServiceAppName = 'mabel-app-${resourceNameSuffix}'
 var appServicePlanName = 'mabel-app-plan-${resourceNameSuffix}'
-var storageAccountName = 'mabel${resourceNameSuffix}'
+var storageAccountName = toLower('mabel${resourceNameSuffix}')
 
 // Define the SKUs for each component based on the environment type.
 var environmentConfigurationMap = {
  /**
-  * config map for "Devlopment" environment.
+  * config map for a "devlopment" environment.
   */
-  Development: {
+  development: {
     appServiceApp: {
       alwaysOn: false
     }
@@ -38,9 +38,9 @@ var environmentConfigurationMap = {
     }
   }
  /**
-  * config map for "Production" environment.
+  * config map for a "production" environment.
   */
-  Production: {
+  production: {
     appServiceApp: {
       alwaysOn: true
     }

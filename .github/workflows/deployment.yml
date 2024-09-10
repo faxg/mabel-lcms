@@ -32,7 +32,7 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     needs: lint
     with:
-      environmentType: Development
+      environmentType: development
       resourceGroupName: mabel-lcms-rg
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -44,7 +44,7 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     needs: deploy-development
     with:
-      environmentType: Production
+      environmentType: production
       resourceGroupName: mabel-lcms-PROD-rg
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
