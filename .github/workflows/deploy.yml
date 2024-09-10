@@ -95,6 +95,7 @@ jobs:
         failOnStdErr: false
         deploymentName: ${{ github.run_number }}
         resourceGroupName: ${{ inputs.resourceGroupName }}
+        environmentType: ${{ inputs.environmentType }}
         template: ./infrastructure/main.bicep
         parameters: >
           @./infrastructure/parameters.${{ inputs.environmentType }}.json

@@ -3,6 +3,10 @@
   "contentVersion": "1.0.0.0",
 
   "parameters": {
+    "environmentType": {
+      "value": "production"
+    },
+
     "location": {
       "value": "switzerlandnorth"
     },
