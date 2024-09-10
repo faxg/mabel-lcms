@@ -36,10 +36,8 @@ jobs:
   ###
   deploy-development:
     uses: ./.github/workflows/deploy.yml
-    
     needs: lint
-    with:
-      
+    with:    
       environmentType: development
       resourceGroupName: mabel-lcms-rg
       
