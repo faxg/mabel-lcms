@@ -43,6 +43,7 @@ jobs:
 
   # Deploy to the production environment.
   deploy-production:
+    # if: !inputs.skipProduction
     uses: ./.github/workflows/deploy.yml
     needs: deploy-development
     with:
