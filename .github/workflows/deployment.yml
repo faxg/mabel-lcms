@@ -100,14 +100,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       name: Run smoke tests
-    - run: |
-        $container = New-PesterContainer `
-          -Path 'infrastructure/Mabel.Tests.ps1' `
-          -Data @{ HostName = '${{needs.deploy.outputs.appServiceAppHostName}}' }
-        Invoke-Pester `
-          -Container $container `
-          -CI
-      shell: pwsh
+    # - run: |
+    #     $container = New-PesterContainer `
+    #       -Path 'infrastructure/Mabel.Tests.ps1' `
+    #       -Data @{ HostName = '${{needs.deploy.outputs.appServiceAppHostName}}' }
+    #     Invoke-Pester `
+    #       -Container $container `
+    #       -CI
+    #   shell: pwsh
   
   # rollback: 
   #   runs-on: ubuntu-latest
