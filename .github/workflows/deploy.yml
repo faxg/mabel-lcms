@@ -22,9 +22,6 @@ on:
             required: true
 
 
-        # externalApiKey:
-        #    required: true
-
 
 jobs:
   ###

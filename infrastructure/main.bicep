@@ -17,6 +17,7 @@ param externalApiUrl string
 
 @description('Postgres admin user')
 param databaseAdminLogin string = 'mabeladmin'
+
 @description('Postgres admin password')
 @secure()
 param databaseAdminPassword string
@@ -26,6 +27,7 @@ param databaseAdminPassword string
 
 var storageAccountName = toLower('mabel${resourceNameSuffix}')
 var databaseName = 'mabel-db-${resourceNameSuffix}'
+var keyVaultName = 'mabel-kv-${resourceNameSuffix}'
 
 /*****
 *** Define the SKUs for each component based on the environment type.
@@ -162,8 +164,21 @@ var environmentConfigurationMap = {
 //   }
 // }
 
+module keyvault './keyvault.bicep' = {
+  name: 'deploy-keyvault'
+  params: {
+    location: location
+    environmentType: environmentType
+    keyVaultName: keyVaultName
+    environmentConfigurationMap: environmentConfigurationMap
+  }
+}
+
 module storage './storage.bicep' = {
   name: 'deploy-storage'
+  dependsOn: [
+    keyvault
+  ]
   params: {
     location: location
     environmentType: environmentType
@@ -174,7 +189,10 @@ module storage './storage.bicep' = {
 
 module database './database.bicep' = {
   name: 'deploy-database'
-  
+  dependsOn: [
+    keyvault
+  ]
+
   params: {
     location: location
     environmentType: environmentType
@@ -183,7 +201,6 @@ module database './database.bicep' = {
     databaseAdminPassword: databaseAdminPassword
     environmentConfigurationMap: environmentConfigurationMap
   }
-  
 }
 
 // module kv './keyvault.bicep' = {
