@@ -32,7 +32,7 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}    
 
-    - if: inputs.environmentType != 'Production'
+    - if: inputs.environmentType != 'production'
       uses: azure/arm-deploy@v1
       name: Run preflight validation
       with:
@@ -40,11 +40,10 @@ jobs:
         deploymentName: ${{ github.run_number }}
         resourceGroupName: ${{ inputs.resourceGroupName }}
         template: ./infrastructure/main.bicep
-        parameters: >
-          environmentType=${{ inputs.environmentType }}
+        parameters: ./infrastructure/parameters.${{ inputs.environmentType }}.json 
         deploymentMode: Validate
 
-    - if: inputs.environmentType == 'Production'
+    - if: inputs.environmentType == 'production'
       uses: azure/arm-deploy@v1
       name: Run what-if
       with:
@@ -52,8 +51,7 @@ jobs:
         failOnStdErr: false
         resourceGroupName: ${{ inputs.resourceGroupName }}
         template: ./infrastructure/main.bicep
-        parameters: >
-          environmentType=${{ inputs.environmentType }}
+        parameters: ./infrastructure/parameters.${{ inputs.environmentType }}.json
         additionalArguments: --what-if
 
 
@@ -78,15 +76,14 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     - uses: azure/arm-deploy@v1
       id: deploy
-      name: Deploy Bicep file
+      name: Deploy Bicep template
       with:
         scope: resourcegroup
         failOnStdErr: false
         deploymentName: ${{ github.run_number }}
         resourceGroupName: ${{ inputs.resourceGroupName }}
         template: ./infrastructure/main.bicep
-        parameters: >
-            environmentType=${{ inputs.environmentType }}
+        parameters: ./infrastructure/parameters.${{ inputs.environmentType }}.json
 
 
   #   #
