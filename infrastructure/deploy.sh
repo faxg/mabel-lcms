@@ -9,7 +9,9 @@ fi
 
 
 # Deploy using the parameters
-az deployment group create --resource-group mabel-lcms-rg --template-file main.bicep --parameters @parameters.local.json
+export dev_rg=mabel-lcms-rg
+az bicep build --file ./main.bicep 
+az deployment group create --what-if --resource-group $dev_rg --template-file main.bicep --parameters @parameters.development.json 
 
 #az deployment sub create --location westeurope --template-file main.bicep --parameter @parameters.local.json
 

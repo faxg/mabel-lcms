@@ -6,11 +6,14 @@ param location string = resourceGroup().location
   'development'
   'production'
 ])
-param environmentType string = 'development'
+param environmentType string
 
 @description('A unique suffix to add to resource names that need to be globally unique.')
 @maxLength(18)
 param resourceNameSuffix string = '${take(toLower(uniqueString(resourceGroup().id, environmentType)), 7)}${environmentType}'
+
+@description('An external API endpoint, potentially different per environment')
+param externalApiUrl string
 
 var appServiceAppName = 'mabel-app-${resourceNameSuffix}'
 var appServicePlanName = 'mabel-app-plan-${resourceNameSuffix}'
@@ -18,10 +21,12 @@ var storageAccountName = toLower('mabel${resourceNameSuffix}')
 
 // Define the SKUs for each component based on the environment type.
 var environmentConfigurationMap = {
- /**
+  /**
   * config map for a "devlopment" environment.
   */
   development: {
+    externalApiUrl: externalApiUrl
+
     appServiceApp: {
       alwaysOn: false
     }
@@ -37,10 +42,12 @@ var environmentConfigurationMap = {
       }
     }
   }
- /**
+  /**
   * config map for a "production" environment.
   */
   production: {
+    externalApiUrl: externalApiUrl
+
     appServiceApp: {
       alwaysOn: true
     }
@@ -79,6 +86,10 @@ resource appServiceApp 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'MabelStorageAccountConnectionString'
           value: MabelStorageAccountConnectionString
+        }
+        {
+          name: 'externalApiUrl'
+          value: environmentConfigurationMap[environmentType].externalApiUrl
         }
       ]
     }

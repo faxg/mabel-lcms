@@ -9,6 +9,10 @@ on:
         resourceGroupName:
             required: true
             type: string
+        externalApiUrl:
+            required: true
+            type: string
+
     secrets:
         AZURE_CLIENT_ID:
             required: true
@@ -16,6 +20,9 @@ on:
             required: true
         AZURE_SUBSCRIPTION_ID:
             required: true
+        # externalApiKey:
+        #    required: true
+
 
 jobs:
   ###
@@ -40,8 +47,11 @@ jobs:
         deploymentName: ${{ github.run_number }}
         resourceGroupName: ${{ inputs.resourceGroupName }}
         template: ./infrastructure/main.bicep
-        parameters: ./infrastructure/parameters.${{ inputs.environmentType }}.json 
         deploymentMode: Validate
+        parameters: >
+          ./infrastructure/parameters.${{ inputs.environmentType }}.json
+          externalApiUrl=${{ inputs.externalApiUrl }}
+        # externalApiKey=${{ secrets.externalApiKey }}
 
     - if: inputs.environmentType == 'production'
       uses: azure/arm-deploy@v1
@@ -51,8 +61,11 @@ jobs:
         failOnStdErr: false
         resourceGroupName: ${{ inputs.resourceGroupName }}
         template: ./infrastructure/main.bicep
-        parameters: ./infrastructure/parameters.${{ inputs.environmentType }}.json
         additionalArguments: --what-if
+        parameters: >
+          ./infrastructure/parameters.${{ inputs.environmentType }}.json
+          externalApiUrl=${{ inputs.externalApiUrl }}
+        # externalApiKey=${{ secrets.externalApiKey }}
 
 
   ##
@@ -83,7 +96,11 @@ jobs:
         deploymentName: ${{ github.run_number }}
         resourceGroupName: ${{ inputs.resourceGroupName }}
         template: ./infrastructure/main.bicep
-        parameters: ./infrastructure/parameters.${{ inputs.environmentType }}.json
+        parameters: >
+          ./infrastructure/parameters.${{ inputs.environmentType }}.json
+          externalApiUrl=${{ inputs.externalApiUrl }}
+        # externalApiKey=${{ secrets.externalApiKey }}
+
 
 
   #   #
