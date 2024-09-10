@@ -9,9 +9,7 @@ on:
         resourceGroupName:
             required: true
             type: string
-        # externalApiUrl:
-        #     required: true
-        #     type: string
+
 
     secrets:
         AZURE_CLIENT_ID:
@@ -20,6 +18,9 @@ on:
             required: true
         AZURE_SUBSCRIPTION_ID:
             required: true
+        POSTGRES_ADMIN_PASSWORD:
+            required: true
+
         # externalApiKey:
         #    required: true
 
@@ -50,7 +51,8 @@ jobs:
         deploymentMode: Validate
         parameters: >
           @./infrastructure/parameters.${{ inputs.environmentType }}.json
-        # externalApiKey=${{ secrets.externalApiKey }}
+          databaseAdminPassword=${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+
 
     - if: inputs.environmentType == 'production'
       uses: azure/arm-deploy@v2
@@ -63,7 +65,7 @@ jobs:
         additionalArguments: --what-if
         parameters: >
           @./infrastructure/parameters.${{ inputs.environmentType }}.json
-        # externalApiKey=${{ secrets.externalApiKey }}
+          databaseAdminPassword=${{ secrets.POSTGRES_ADMIN_PASSWORD }}
 
 
   ##
@@ -97,7 +99,8 @@ jobs:
         template: ./infrastructure/main.bicep
         parameters: >
           @./infrastructure/parameters.${{ inputs.environmentType }}.json
-        # externalApiKey=${{ secrets.externalApiKey }}
+          databaseAdminPassword=${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+
 
 
 
