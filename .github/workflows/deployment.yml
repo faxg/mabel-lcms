@@ -71,7 +71,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    #environment: MabelApp
+    #environment: MabelApp TODO FIXME Federated Credential for environments instead of branch
     needs: preview
     outputs:
       appServiceAppHostName: ${{ steps.deploy.outputs.appServiceAppHostName }}
@@ -99,12 +99,19 @@ jobs:
     needs: deploy
     steps:
     - uses: actions/checkout@v3
-    # - run: |
-    #     $container = New-PesterContainer `
-    #       -Path 'deploy/Website.Tests.ps1' `
-    #       -Data @{ HostName = '${{needs.deploy.outputs.appServiceAppHostName}}' }
-    #     Invoke-Pester `
-    #       -Container $container `
-    #       -CI
-    #   name: Run smoke tests
-    #   shell: pwsh
+    - run: |
+        $container = New-PesterContainer `
+          -Path 'infrastructure/Website.Tests.ps1' `
+          -Data @{ HostName = '${{needs.deploy.outputs.appServiceAppHostName}}' }
+        Invoke-Pester `
+          -Container $container `
+          -CI
+      name: Run smoke tests
+      shell: pwsh
+  # rollback: 
+  #   runs-on: ubuntu-latest
+  #   needs: smoke-test
+  #   if: ${{ always() && needs.smoke-test.result == 'failure' }}
+  #   steps:
+  #   - run: |
+  #       echo "Performing rollback steps..."
