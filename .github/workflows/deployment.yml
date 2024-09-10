@@ -75,6 +75,7 @@ jobs:
     needs: preview
     outputs:
       appServiceAppHostName: ${{ steps.deploy.outputs.appServiceAppHostName }}
+      appServiceAppName: ${{ steps.deploy.outputs.appServiceAppName }}
     steps:
     - uses: actions/checkout@v3
     - uses: azure/login@v1
@@ -93,6 +94,9 @@ jobs:
         resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
         template: ./infrastructure/main.bicep
         parameters: environmentType=${{ env.ENVIRONMENT }}
+    
+    - run: |
+        echo "AppService Hostname: $appServiceAppHostName"
 
   smoke-test:
     runs-on: ubuntu-latest
