@@ -41,7 +41,7 @@ jobs:
 
     - if: inputs.environmentType != 'production'
       uses: azure/arm-deploy/@v2
-      name: Run preflight validation
+      name: Run preflight validation (non-production)
       with:
         scope: resourcegroup
         deploymentName: ${{ github.run_number }}
@@ -50,12 +50,11 @@ jobs:
         deploymentMode: Validate
         parameters: >
           @./infrastructure/parameters.${{ inputs.environmentType }}.json
-          externalApiUrl=${{ inputs.externalApiUrl }}
         # externalApiKey=${{ secrets.externalApiKey }}
 
     - if: inputs.environmentType == 'production'
       uses: azure/arm-deploy@v2
-      name: Run what-if
+      name: Run what-if (production)
       with:
         scope: resourcegroup
         failOnStdErr: false
@@ -64,7 +63,6 @@ jobs:
         additionalArguments: --what-if
         parameters: >
           @./infrastructure/parameters.${{ inputs.environmentType }}.json
-          externalApiUrl=${{ inputs.externalApiUrl }}
         # externalApiKey=${{ secrets.externalApiKey }}
 
 
@@ -87,10 +85,10 @@ jobs:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        
+
     - uses: azure/arm-deploy@v2
       id: deploy
-      name: Deploy Bicep template
+      name: Deploy Bicep template to ${{ inputs.environmentType }}
       with:
         scope: resourcegroup
         failOnStdErr: false
@@ -99,7 +97,6 @@ jobs:
         template: ./infrastructure/main.bicep
         parameters: >
           @./infrastructure/parameters.${{ inputs.environmentType }}.json
-          externalApiUrl=${{ inputs.externalApiUrl }}
         # externalApiKey=${{ secrets.externalApiKey }}
 
 

@@ -7,16 +7,22 @@ on:
     branches:
       - main
       - '/release/**'
-  workflow_dispatch:
 
+  workflow_dispatch:
+    inputs:
+      skipProduction:
+        description: 'Skip deploying to production'
+        type: boolean
+        required: false
+        default: true
+    
 permissions:
   contents: read
   id-token: write
+      
 
-
-
-jobs:
-
+  
+jobs:        
   ###
   ### Linting (independent of environment)
   ### 
@@ -43,7 +49,8 @@ jobs:
 
   # Deploy to the production environment.
   deploy-production:
-    # if: !inputs.skipProduction
+    if: ! inputs.skipProduction
+
     uses: ./.github/workflows/deploy.yml
     needs: deploy-development
     with:
