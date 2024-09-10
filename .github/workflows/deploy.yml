@@ -49,7 +49,7 @@ jobs:
         template: ./infrastructure/main.bicep
         deploymentMode: Validate
         parameters: >
-          ./infrastructure/parameters.${{ inputs.environmentType }}.json
+          @./infrastructure/parameters.${{ inputs.environmentType }}.json
           externalApiUrl=${{ inputs.externalApiUrl }}
         # externalApiKey=${{ secrets.externalApiKey }}
 
@@ -63,7 +63,7 @@ jobs:
         template: ./infrastructure/main.bicep
         additionalArguments: --what-if
         parameters: >
-          ./infrastructure/parameters.${{ inputs.environmentType }}.json
+          @./infrastructure/parameters.${{ inputs.environmentType }}.json
           externalApiUrl=${{ inputs.externalApiUrl }}
         # externalApiKey=${{ secrets.externalApiKey }}
 
@@ -97,7 +97,7 @@ jobs:
         resourceGroupName: ${{ inputs.resourceGroupName }}
         template: ./infrastructure/main.bicep
         parameters: >
-          ./infrastructure/parameters.${{ inputs.environmentType }}.json
+          @./infrastructure/parameters.${{ inputs.environmentType }}.json
           externalApiUrl=${{ inputs.externalApiUrl }}
         # externalApiKey=${{ secrets.externalApiKey }}
 
