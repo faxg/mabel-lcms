@@ -9,9 +9,9 @@ on:
         resourceGroupName:
             required: true
             type: string
-        externalApiUrl:
-            required: true
-            type: string
+        # externalApiUrl:
+        #     required: true
+        #     type: string
 
     secrets:
         AZURE_CLIENT_ID:
